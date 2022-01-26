@@ -1,0 +1,326 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+function LilStat(props) {
+let start = "none";
+
+
+
+return (
+  <div
+  style={{border: "solid", borderWidth: "2px", borderColor: "#cce0ff", borderRadius: "10px"}}
+  className="shadow-sm p-2 mb-3 bg-white   card">
+  <div className="card-body">
+    <h3 style={{color: "#303030", fontWeight: "bold", fontFamily: "Times Roman", letterSpacing: "1px"}}
+    onClick={() => {props.displayOrder(props.status.ourId)}}>{props.status.ourId}</h3>
+    <h2 style={{color: "#0047b3"}}>"{props.status.ready}"</h2>
+    <p style={{fontSize: "2.2em"}} >{props.status.timeMan} min</p>
+
+    <div>
+
+    <button type="button" value="button"  className="btn btn-success btn-sm"
+    className="btn btn-outline-success btn-sm"
+    style={{ marginLeft: "2%", marginRight:"1%", fontWeight: "bold"}}
+     onClick={() => {props.tisGift(props.status.ourId)}}> a gift</button>
+
+     <button type="button" value="button" className="btn btn-danger btn-sm" style={{fontWeight: "bold",  color: "white", marginLeft: "6px"}}
+     onClick={() => { props.deleteButton(props.status._id) }}> - </button>
+
+     <div className={props.status.ourId}  style={{marginLeft: "1%", display: "none"}}>
+<div style={{display: "inline-block"}}>
+     <button type="button" value="button"  className="btn btn-warning btn-sm" style={{
+      color: "white", fontWeight: "bold"}}
+      onClick={() => { props.sendGift(props.gifted, props.status.ourId)}}> send gift</button>
+  </div>
+  <div style={{display: "inline-block", marginTop: "2%"}}>
+   <input
+   style={{fontWeight: "bold", color: "grey", marginLeft: "4%"}}
+     className="gift"
+     placeholder=" please type in a valid email"
+     value={props.forGift}
+       onChange={props.giftedName}
+       type="text"
+     />
+     </div>
+
+    </div>
+    </div>
+
+    </div>
+  </div>
+
+)}
+
+function EditRun(props) {
+return (
+
+    <button type="button" style={{fontWeight: "bold"}} className="btn btn-outline-secondary"
+    onClick={() => props.showDelete()}> Edit Account </button>
+
+
+)}
+function DeleteRun(props) {
+return (
+  <div>
+  <button type="button" value="button" className="btn btn-outline-warning"  style={{fontWeight: "bold"}}
+  onClick={() => { props.closeDelete()}}> Close Edit </button>
+  <button type="button" value="button" className="btn btn-outline-danger" style={{fontWeight: "bold", marginLeft: ".3em"}}
+   onClick={() => { props.accountDelete()}}> Delete Account </button>
+  </div>
+
+
+)}
+
+
+  const StatLine = props => {
+
+ const [showDelete, setShowDelete] = useState(false);
+ const [giftedAction, setGifted] = useState("");
+ const [showGiftAction, setShowGift] = useState('');
+ const [statusCon, setStatusCon] = useState([]);
+
+
+
+   useEffect(
+     () => {
+      axios.get('http://localhost:5000/users/status', { headers:
+        {
+        "this-token": localStorage.getItem("this-token")
+      }
+      })
+      .then(response => {
+            setStatusCon(response.data);
+          //console.log props from the MenuItems
+          //console.log props from the MenuItems
+          //console.log props from the MenuItems
+            console.log(props.ema);
+
+          })
+          .catch((error) => {
+            console.log(error);
+          })
+        },[]);
+
+//final delete of profile
+      const deleteButton = id => {
+        axios.delete('http://localhost:5000/users/status/'+id, { headers:
+          {
+          "this-token": localStorage.getItem("this-token")
+        }
+        })
+          .then(res => console.log(res.data));
+          setStatusCon(statusCon.filter(el => el._id !== id));
+      }
+
+//show delete profile button
+      const showDeleteAction = () => {
+          setShowDelete(true);
+        }
+      //display gift give button
+            const showGiftButton = (entry) => {
+
+        showGiftAction || '' ? setShowGift(false) : setShowGift(true);
+
+
+
+              const giftId = statusCon.filter(el => el.ourId === entry);
+              for (let i = 0; i < giftId.length; i++ ) {
+                if (!showGiftAction) {
+                let cool = document.getElementsByClassName(entry);
+                  cool[i].style.display = "inline-block";
+
+               } else {
+
+                 let cool = document.getElementsByClassName(entry);
+                 cool[i].style.display = "none";
+
+
+                   setGifted('');
+
+               }
+
+               }
+
+}
+
+
+
+      //updateSend
+        const statSend = async (our) => {
+
+
+           const gifter = {
+                ourIdMan: our,
+                weReady: "successfully gifted"
+              }
+
+             await axios.put('http://localhost:5000/users/upStatsend', gifter, { headers:
+               {
+               "this-token": localStorage.getItem("this-token")
+             }
+             })
+             .then(res => {
+                  window.location = "/status";
+                })
+                .catch((error) => {
+                  console.log("big problem");
+                })
+      }
+
+            const updateAd = async (him, our) => {
+
+             const adUp = {
+                oldEmail: our,
+                newEmail: him,
+                adCart: statusCon
+              }
+
+          await axios.put('http://localhost:5000/users/adminup', adUp, { headers:
+               {
+               "this-token": localStorage.getItem("this-token")
+             }
+             })
+             .then(response => {
+                  console.log("greetings from below");
+             })
+             .then(res => {
+                  statSend(our);
+                  console.log("tumbleweed");
+                })
+                .catch((error) => {
+                  console.log(error);
+                })
+
+
+  }
+
+
+       const sendGift = async (him, our) => {
+        /* let b = our;
+         let c = b.indexOf(".com");
+         let d = b.substring(0, c !== -1 ? c : b.length);*/
+
+         let bb = him;
+         let cc = bb.indexOf("@");
+         let dd = bb.substring(0, cc !== -1 ? cc : bb.length);
+
+         const answer = {
+           commId: our,
+           email: him,
+           ready: `Hey ${dd}, you've been sent an order!`
+         }
+
+
+        await axios.post('http://localhost:5000/users/sendGift', answer, { headers:
+         {
+         "this-token": localStorage.getItem("this-token")
+       }
+       })
+       .then((res) => {
+            updateAd(him, our);
+            console.log(res.data);
+          })
+          .catch((error) => {
+            console.log(error);
+          })
+          setShowGift(our);
+            console.log(answer.commId);
+          }
+
+
+
+  const giftedName = e => {
+        setGifted(e.target.value);
+          }
+
+      const closeDelete = () => {
+        setShowDelete(false);
+        }
+
+  const accountDelete = async () => {
+    const here = { headers:
+      {
+      "this-token": localStorage.getItem("this-token")
+    }
+  }
+  await axios.delete('http://localhost:5000/users/account', here)
+    .then(response => {
+          console.log("that's nice");
+         })
+        .catch((error) => {
+          console.log(error);
+        })
+        axios.delete('http://localhost:5000/users/logout', here)
+        .then(response => {
+          const good = localStorage.clear('this-token');
+            window.location = 'http://localhost:5000/login';
+        })
+
+
+
+
+
+}
+
+    const displayOrder = id => {
+       window.location = '/displayOrder/'+id;
+    }
+
+    const ordersList = () => {
+
+       return statusCon.map(sl=> {
+         return <LilStat
+         status={sl}
+         displayOrder={displayOrder}
+          deleteButton={deleteButton}
+         tisGift={showGiftButton}
+          gifted={giftedAction}
+          sendGift={sendGift}
+          showGift={showGiftAction}
+          forGift={giftedAction}
+         giftedName={giftedName}
+         key={sl._id}/>;
+      })
+    }
+
+
+
+
+
+
+
+
+    return (
+
+      <div>
+      { (showDelete === false) ?
+    <EditRun showDelete={showDeleteAction}/>
+      :
+      <DeleteRun closeDelete={closeDelete} accountDelete={accountDelete}/>
+    }
+      <h2
+      className="shadow p-1 mb-4"
+      style={{
+        marginTop: "3%",
+        fontFamily: "georgia",
+        color: " grey",
+        fontSize: "35px",
+        letterSpacing: "2px",
+        backgroundColor: "",
+        textAlign: "center",
+        border: "solid",
+        borderWidth: "1px",
+        borderRadius: "5px"
+
+    }}>Profile</h2>
+          <div>
+          { ordersList() }
+      </div>
+
+
+        </div>
+
+
+    )
+  }
+export default StatLine;
