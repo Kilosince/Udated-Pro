@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function LilStat(props) {
-let start = "none";
-
 
 
 return (
+
+
   <div
   style={{border: "solid", borderWidth: "2px", borderColor: "#cce0ff", borderRadius: "10px"}}
   className="shadow-sm p-2 mb-3 bg-white   card">
@@ -28,14 +28,15 @@ return (
 
      <div className={props.status.ourId}  style={{marginLeft: "1%", display: "none"}}>
 <div style={{display: "inline-block"}}>
-     <button type="button" value="button"  className="btn btn-warning btn-sm" style={{
-      color: "white", fontWeight: "bold"}}
-      onClick={() => { props.sendGift(props.gifted, props.status.ourId)}}> send gift</button>
+     <button type="button" value="button"  className="btn btn-warning btn-sm"
+     style={{color: "white", fontWeight: "bold"}}
+      onClick={() => {props.sendGift(props.gifted, props.status.ourId)}}> send gift</button>
   </div>
   <div style={{display: "inline-block", marginTop: "2%"}}>
    <input
    style={{fontWeight: "bold", color: "grey", marginLeft: "4%"}}
-     className="gift"
+   name="giftInput"
+     className={props.key}
      placeholder=" please type in a valid email"
      value={props.forGift}
        onChange={props.giftedName}
@@ -43,10 +44,15 @@ return (
      />
      </div>
 
+
     </div>
     </div>
 
     </div>
+    <div  className="mark"  style={{fontWeight: "bold", color: "grey", marginLeft: "4%", display: "none"}}>
+     Oh no, we don't see that email? Please try another.
+    </div>
+
   </div>
 
 )}
@@ -72,12 +78,17 @@ return (
 )}
 
 
+
   const StatLine = props => {
 
  const [showDelete, setShowDelete] = useState(false);
  const [giftedAction, setGifted] = useState("");
  const [showGiftAction, setShowGift] = useState('');
  const [statusCon, setStatusCon] = useState([]);
+ const [checkEmail, setCheckEmail] = useState([]);
+ const [truth, setTruth] = useState("begin");
+ const [warnerBros, setWarner] = useState("Seems Fine")
+
 
 
 
@@ -90,16 +101,13 @@ return (
       })
       .then(response => {
             setStatusCon(response.data);
-          //console.log props from the MenuItems
-          //console.log props from the MenuItems
-          //console.log props from the MenuItems
-            console.log(props.ema);
+            console.log(response.data);
 
           })
           .catch((error) => {
             console.log(error);
           })
-        },[]);
+        },[warnerBros]);
 
 //final delete of profile
       const deleteButton = id => {
@@ -112,12 +120,33 @@ return (
           setStatusCon(statusCon.filter(el => el._id !== id));
       }
 
+      useEffect(
+        () => {
+         axios.get('http://localhost:5000/users/checkEmail', { headers:
+           {
+           "this-token": localStorage.getItem("this-token")
+         }
+         })
+         .then(response => {
+               setCheckEmail(response.data);
+
+             })
+             .catch((error) => {
+               console.log(error);
+             })
+           },[]);
 //show delete profile button
       const showDeleteAction = () => {
           setShowDelete(true);
         }
+
+        //gets user.email to check against user input
+
+
+
       //display gift give button
             const showGiftButton = (entry) => {
+
 
         showGiftAction || '' ? setShowGift(false) : setShowGift(true);
 
@@ -141,6 +170,8 @@ return (
 
                }
 
+
+
 }
 
 
@@ -160,46 +191,61 @@ return (
              }
              })
              .then(res => {
-                  window.location = "/status";
+               window.location = "/status";
                 })
                 .catch((error) => {
                   console.log("big problem");
                 })
       }
 
+      const secPoint = async (our, him) => {
+
+                const adUp = {
+                   oldEmail: our,
+                   newEmail: him,
+                   adCart: statusCon
+                 }
+
+             await axios.put('http://localhost:5000/users/adminup', adUp, { headers:
+                  {
+                  "this-token": localStorage.getItem("this-token")
+                }
+                })
+                .then(response => {
+                   statSend(him);
+
+
+                })
+                .then(res => {
+                  console.log("tumbleweed");
+                   })
+                   .then(res => {
+                      //hide error message
+
+                      })
+                   .catch((error) => {
+                     console.log(error);
+                   })
+                 }
+
+
+
             const updateAd = async (him, our) => {
 
-             const adUp = {
-                oldEmail: our,
-                newEmail: him,
-                adCart: statusCon
-              }
 
-          await axios.put('http://localhost:5000/users/adminup', adUp, { headers:
-               {
-               "this-token": localStorage.getItem("this-token")
-             }
-             })
-             .then(response => {
-                  console.log("greetings from below");
-             })
-             .then(res => {
-                  statSend(our);
-                  console.log("tumbleweed");
-                })
-                .catch((error) => {
-                  console.log(error);
-                })
+              /*him = him.replace(/[^A-Za-z]+/g, '');*/
+              const emailTruth = checkEmail.filter(el => el.email === him);
+                await (emailTruth.length === 0) ? console.log(our) : secPoint(him, our);
 
-
-  }
+                //show error message
+}
 
 
        const sendGift = async (him, our) => {
         /* let b = our;
          let c = b.indexOf(".com");
          let d = b.substring(0, c !== -1 ? c : b.length);*/
-
+         let origOur = our;
          let bb = him;
          let cc = bb.indexOf("@");
          let dd = bb.substring(0, cc !== -1 ? cc : bb.length);
@@ -217,7 +263,7 @@ return (
        }
        })
        .then((res) => {
-            updateAd(him, our);
+            updateAd(him, origOur);
             console.log(res.data);
           })
           .catch((error) => {
@@ -230,7 +276,8 @@ return (
 
 
   const giftedName = e => {
-        setGifted(e.target.value);
+        const evalue = e.target.value;
+        setGifted(evalue);
           }
 
       const closeDelete = () => {
@@ -268,7 +315,10 @@ return (
 
     const ordersList = () => {
 
+
+
        return statusCon.map(sl=> {
+
          return <LilStat
          status={sl}
          displayOrder={displayOrder}
@@ -298,6 +348,7 @@ return (
       :
       <DeleteRun closeDelete={closeDelete} accountDelete={accountDelete}/>
     }
+
       <h2
       className="shadow p-1 mb-4"
       style={{
