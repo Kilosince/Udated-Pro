@@ -33,6 +33,9 @@ return (
       onClick={() => {props.sendGift(props.gifted, props.status.ourId)}}> send gift</button>
   </div>
   <div style={{display: "inline-block", marginTop: "2%"}}>
+    //This is the input field that has the issue
+    //This is the input field that has the issue
+    //This is the input field that has the issue
    <input
    style={{fontWeight: "bold", color: "grey", marginLeft: "4%"}}
    name="giftInput"
@@ -273,8 +276,10 @@ return (
             console.log(answer.commId);
           }
 
-
-
+//this is the event handler
+//this is the event handler
+//this is the event handler
+  
   const giftedName = e => {
         const evalue = e.target.value;
         setGifted(evalue);
